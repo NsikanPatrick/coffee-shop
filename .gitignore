@@ -1,0 +1,16 @@
+# http://git-scm.com/docs/gitignore
+venv/
+.vscode/
+__pycache__/
+test.db
+*env
+
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
