@@ -17,6 +17,7 @@ CORS(app)
 !! NOTE THIS MUST BE UNCOMMENTED ON FIRST RUN
 !! Running this funciton will add one
 '''
+# Done, database initialization code uncommneted
 db_drop_and_create_all()
 
 # ROUTES
@@ -28,6 +29,7 @@ db_drop_and_create_all()
     returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
         or appropriate status code indicating reason for failure
 '''
+# Done, drinks endpoint implemented
 @app.route('/drinks', methods=['GET'])
 def get_drinks():
     try:
@@ -54,6 +56,7 @@ def get_drinks():
     returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
         or appropriate status code indicating reason for failure
 '''
+# Done, drinks-detail endpoint implemented
 @app.route('/drinks-detail', methods=['GET'])
 @requires_auth('get:drinks-detail')
 def get_drink_detail(payload):
@@ -70,8 +73,8 @@ def get_drink_detail(payload):
     except:
         return jsonify({
             'success': False,
-            'error': "An Internal Error Occurred"
-        }), 500
+            'error': "Bad request"
+        }), 400
 
 '''
 @TODO implement endpoint
@@ -82,6 +85,7 @@ def get_drink_detail(payload):
     returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the newly created drink
         or appropriate status code indicating reason for failure
 '''
+# Done, POST drink endpoint is implemented
 @app.route('/drinks', methods=['POST'])
 @requires_auth('post:drinks')
 def create_drink(payload):
@@ -200,7 +204,24 @@ def unprocessable(error):
                     }), 404
 
 '''
+# Bad Request Error
+@app.errorhandler(400)
+def bad_request(error):
+    return jsonify({
+        "success": False,
+        "error": 400,
+        "message": 'Bad Request'
+    }), 400
+    
 
+# Internal Server Error
+@app.errorhandler(500)
+def internal_server_error(error):
+    return jsonify({
+        "success": False,
+        "error": 500,
+        "message": 'Internal Server Error'
+    }), 500
 '''
 @TODO implement error handler for 404
     error handler should conform to general task above
@@ -226,23 +247,6 @@ def auth_error(error):
     }), error.status_code
 
 
-# Bad Request Error
-@app.errorhandler(400)
-def bad_request(error):
-    return jsonify({
-        "success": False,
-        "error": 400,
-        "message": 'Bad Request'
-    }), 400
-    
 
-# Internal Server Error
-@app.errorhandler(500)
-def internal_server_error(error):
-    return jsonify({
-        "success": False,
-        "error": 500,
-        "message": 'Internal Server Error'
-    }), 500
 
 

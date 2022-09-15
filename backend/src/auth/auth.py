@@ -1,5 +1,5 @@
 import json
-from flask import request, _request_ctx_stack
+from flask import request, _request_ctx_stack, abort
 from functools import wraps
 from jose import jwt
 from urllib.request import urlopen
@@ -97,7 +97,7 @@ def check_permissions(permission, payload):
     raise AuthError(
         {
             'code': 'invalid_permissions',
-            'description': 'User Does Not Have permissions'
+            'description': 'User Does Not Have Access permissions'
         }, 401)
 
 '''
@@ -121,7 +121,7 @@ def verify_decode_jwt(token):
 
     unverified_header = jwt.get_unverified_header(token)
 
-    rsa_key = {}
+    rbs_key = {}
 
     if 'kid' not in unverified_header:
         raise AuthError({
@@ -131,7 +131,7 @@ def verify_decode_jwt(token):
 
     for key in jwks['keys']:
         if key['kid'] == unverified_header['kid']:
-            rsa_key = {
+            rbs_key = {
                 'kty': key['kty'],
                 'kid': key['kid'],
                 'use': key['use'],
@@ -139,11 +139,11 @@ def verify_decode_jwt(token):
                 'e': key['e']
             }
 
-    if rsa_key:
+    if rbs_key:
         try:
             payload = jwt.decode(
                 token,
-                rsa_key,
+                rbs_key,
                 algorithms=ALGORITHMS,
                 audience=API_AUDIENCE,
                 issuer='https://' + AUTH0_DOMAIN + '/'
