@@ -40,7 +40,7 @@ def get_drinks():
         return jsonify({
             'success': True,
             'drinks': repr_drinks
-    }), 200
+        }), 200
 
     except:
         return jsonify({
@@ -64,6 +64,9 @@ def get_drink_detail(payload):
         drinks = Drink.query.all()
 
         repr_drinks = [drink.long() for drink in drinks]
+
+        if len(repr_drinks) == 0:
+            abort(404)
 
         return jsonify({
         'success': True,
@@ -94,7 +97,7 @@ def create_drink(payload):
     try:
 
         title = data['title']
-        recipe = data['recipe']
+        recipe = json.dumps(data.get('recipe'))
 
         drink = Drink(title=title, recipe=recipe)
         drink.insert()
@@ -120,31 +123,33 @@ def create_drink(payload):
 '''
 @app.route('/drinks/<int:drink_id>', methods=['PATCH'])
 @requires_auth('patch:drinks')
-def update_drink(drink_id, payload):
-    data = request.get_json()
+def patch_drink(f, drink_id):
+    body = request.get_json()
 
-    drink = Drink.query.filter(Drink.id == drink_id).one_or_none()
+    if (not body):
+        abort(422)
 
-    if not drink:
-        abort(404)
+    title = body.get('title', None)
+    recipe = body.get('recipe', None)
 
     try:
+        drink = Drink.query.get(drink_id)
+        if drink == None:
+            abort(404)
 
-        drink.title = data['title']
-        drink.recipe = data['recipe']
-
-        drink.update()
-
-        return jsonify({
-            'success': True,
-            'drinks': [drink.long()]
-        })
-
+        if title:
+            drink.title = title
+        
+        if recipe:
+            drink.recipe = recipe
     except:
-        return jsonify({
-            'success': False,
-            'error': "Operation failed"
-        }), 500
+        # print(sys.exc_info())
+        abort(400)
+    
+    return jsonify({
+        'success': True,
+        'drinks': [drink.long()]
+    })
 
 '''
 @TODO implement endpoint
@@ -158,8 +163,8 @@ def update_drink(drink_id, payload):
 '''
 @app.route('/drinks/<int:drink_id>', methods=['DELETE'])
 @requires_auth('delete:drinks')
-def delete_drink(drink_id, payload):
-    drink = Drink.query.filter(Drink.id == drink_id)
+def delete_drink(payload, drink_id):
+    drink = Drink.query.filter(Drink.id == drink_id).one_or_none()
 
     if not drink:
         abort(404)
